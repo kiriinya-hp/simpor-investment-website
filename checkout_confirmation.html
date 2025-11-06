@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - Simpor Investment</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #f4f4f4; 
+            padding: 40px; 
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #f68b1e;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        #order-details ul {
+            list-style: none;
+            padding: 0;
+        }
+        #order-details li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px dotted #ccc;
+            font-size: 1.1em;
+        }
+        #order-details li:last-child {
+            border-bottom: none;
+        }
+        .item-name {
+            font-weight: bold;
+            flex-grow: 1;
+        }
+        .item-price {
+            width: 150px;
+            text-align: right;
+            color: #f68b1e;
+            font-weight: bold;
+        }
+        .summary-box {
+            border-top: 2px solid #f68b1e;
+            padding-top: 20px;
+            margin-top: 30px;
+            text-align: right;
+        }
+        .summary-box p {
+            margin: 5px 0;
+            font-size: 1.2em;
+        }
+        .summary-box strong {
+            font-size: 1.5em;
+            color: #333;
+        }
+        .action-buttons {
+            margin-top: 40px;
+            text-align: center;
+        }
+        .action-buttons a {
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+            display: inline-block;
+            transition: background-color 0.2s;
+        }
+        .pay-btn {
+            background-color: #f68b1e;
+            margin-right: 15px;
+        }
+        .pay-btn:hover {
+            background-color: #e57e17;
+        }
+        .back-btn {
+            background-color: #777;
+        }
+        .back-btn:hover {
+            background-color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🎉 Order Summary</h1>
+        <p style="text-align: center; font-style: italic;">
+            Please review your order details before proceeding to payment.
+        </p>
+
+        <div id="order-details">
+            <h2>Items in your Cart (<span id="unique-items-count">0</span> unique items)</h2>
+            <ul id="item-list">
+            </ul>
+        </div>
+
+        <div class="summary-box">
+            <p><strong>Total Due:</strong> <span id="final-total">Ksh 0</span></p>
+        </div>
+
+        <div class="action-buttons">
+            <a href="payment.html" class="pay-btn" id="proceed-to-payment">
+                Proceed to M-Pesa Payment
+            </a>
+            <a href="index.html" class="back-btn">
+                Back to Shop
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function loadOrderSummary() {
+            let orderDataString = localStorage.getItem('simporConfirmedOrder');
+            const itemList = document.getElementById('item-list');
+            const finalTotalSpan = document.getElementById('final-total');
+            const uniqueItemsCountSpan = document.getElementById('unique-items-count');
+            const payButton = document.getElementById('proceed-to-payment');
+            let orderData = null;
+
+            if (!orderDataString) {
+                const demoItems = {
+                    'Example Phone': { quantity: 1, price: 85000 },
+                    'Example T-Shirt': { quantity: 2, price: 1200 }
+                };
+                let demoTotal = 0;
+                let demoUniqueItems = 0;
+                for (const name in demoItems) {
+                    demoTotal += demoItems[name].quantity * demoItems[name].price;
+                    demoUniqueItems++;
+                }
+
+                orderData = {
+                    items: demoItems,
+                    totalPrice: demoTotal,
+                    uniqueItems: demoUniqueItems
+                };
+                orderDataString = JSON.stringify(orderData);
+                localStorage.setItem('simporConfirmedOrder', orderDataString);
+            }
+
+            try {
+                orderData = JSON.parse(orderDataString);
+                
+                let total = 0;
+                let itemsMap = orderData.items || {};
+                let uniqueItemsCount = Object.keys(itemsMap).length;
+
+                itemList.innerHTML = ''; 
+                
+                if (uniqueItemsCount > 0) {
+                    for (const name in itemsMap) {
+                        const item = itemsMap[name];
+                        const quantity = item.quantity || 1;
+                        const price = item.price || 0;
+                        const itemTotal = quantity * price;
+
+                        total += itemTotal;
+                        
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `
+                            <span class="item-name">${name} (x${quantity})</span>
+                            <span class="item-price">Ksh ${itemTotal.toLocaleString()}</span>
+                        `;
+                        itemList.appendChild(listItem);
+                    }
+                }
+                
+                uniqueItemsCountSpan.textContent = uniqueItemsCount.toLocaleString();
+                finalTotalSpan.textContent = `Ksh ${total.toLocaleString()}`;
+
+                if (total <= 0 || uniqueItemsCount === 0) {
+                     itemList.innerHTML = '<li>No items to display. Please return to shop.</li>';
+                     payButton.style.display = 'none';
+                }
+
+            } catch (e) {
+                console.error("Error loading or parsing order data:", e);
+                itemList.innerHTML = '<li>Error loading order details.</li>';
+                finalTotalSpan.textContent = 'Ksh 0 (Error)';
+                payButton.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadOrderSummary);
+    </script>
+</body>
+</html>

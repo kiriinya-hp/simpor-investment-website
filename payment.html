@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M-Pesa Payment - Simpor Investment</title>
+    <style>
+        :root {
+            --mpesa-green: #00A651;
+            --mpesa-dark-green: #008f44;
+            --text-dark: #333;
+            --text-light: #777;
+            --bg-light: #f9f9f9;
+            --bg-body: #f4f4f4;
+            --border-light: #ddd;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-body);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+        
+        .payment-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            border-top: 4px solid var(--mpesa-green);
+        }
+        
+        h1 {
+            color: var(--text-dark);
+            text-align: center;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 1.6em;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        h1 img {
+            width: 100px;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.9em;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            background-color: var(--bg-light);
+        }
+        
+        input[type="text"]:focus {
+            border-color: var(--mpesa-green);
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(0, 166, 81, 0.1);
+            outline: none;
+        }
+        
+        .pay-btn {
+            background-color: var(--mpesa-green);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1em;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 3px 8px rgba(0, 166, 81, 0.2);
+        }
+        
+        .pay-btn:hover {
+            background-color: var(--mpesa-dark-green);
+            transform: translateY(-1px);
+        }
+        
+        .pay-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        #order-summary-box {
+            background-color: #f7fffb;
+            border: 1px solid #cce5ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-header {
+            font-size: 1em;
+            font-weight: bold;
+            color: var(--mpesa-dark-green);
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 10px;
+        }
+        
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .item-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 0.85em;
+            color: var(--text-dark);
+        }
+        
+        .item-list li span:last-child {
+            font-weight: 600;
+        }
+        
+        .total-section {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 10px;
+            margin-top: 10px;
+            border-top: 1px solid var(--mpesa-dark-green);
+            font-size: 1em;
+            font-weight: bold;
+        }
+        
+        #total-due {
+            font-size: 1.3em;
+            color: var(--mpesa-green);
+        }
+        
+        .instruction-box {
+            background-color: #f0f7ff;
+            border: 1px solid #cce5ff;
+            color: #004085;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            line-height: 1.4;
+            font-size: 0.8em;
+        }
+        
+        .instruction-box p {
+            margin: 4px 0;
+        }
+        
+        .instruction-box strong, .instruction-box p:first-child {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .form-group p {
+            font-size: 0.75em;
+            color: var(--text-light); 
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <h1>
+            Pay with M-Pesa 
+            <img src="mpesa.png" alt="M-Pesa Logo">
+        </h1>
+
+        <div id="order-summary-box">
+            <div class="summary-header">Order Summary</div>
+            <ul class="item-list" id="summary-item-list">
+                <li><span>Loading items...</span><span></span></li>
+            </ul>
+            
+            <div class="total-section">
+                <span>Total Amount Due:</span>
+                <span id="total-due">Ksh 0</span>
+            </div>
+        </div>
+        
+        <div class="instruction-box">
+            <p>
+                Please enter your registered M-Pesa phone number below to initiate the STK Push notification.
+            </p>
+            <p style="color: #cc0000; font-weight: bold;">
+                **Note:** This page is for simulation only and will redirect after a delay.
+            </p>
+        </div>
+
+        <form onsubmit="handlePayment(event)">
+            <div class="form-group">
+                <label for="phone-number">M-Pesa Phone Number</label>
+                <input type="text" id="phone-number" required placeholder="2547XXXXXXXX" pattern="^(0|254|\+254)7[0-9]{8}$" title="Enter a valid M-Pesa number (e.g., 2547XXXXXXXX)">
+                <p>Format example: 2547xxxxxxxx or 07xxxxxxxx</p>
+            </div>
+
+            <button type="submit" class="pay-btn" id="payment-button">Initiate M-Pesa STK Push</button>
+        </form>
+    </div>
+
+    <script>
+        function loadOrderTotal() {
+            const orderDataString = localStorage.getItem('simporConfirmedOrder');
+            const totalDueElement = document.getElementById('total-due');
+            const itemListElement = document.getElementById('summary-item-list');
+            const payButton = document.getElementById('payment-button');
+            let total = 0;
+            let orderData = null;
+
+            if (orderDataString) {
+                try {
+                    orderData = JSON.parse(orderDataString);
+                    total = orderData.totalPrice || 0;
+                } catch (e) {
+                    console.error("Error parsing stored order data:", e);
+                }
+            } 
+
+            totalDueElement.textContent = `Ksh ${total.toLocaleString()}`;
+
+            itemListElement.innerHTML = '';
+            const itemsMap = orderData?.items || {};
+            const itemsArray = [];
+
+            if (Object.keys(itemsMap).length > 0) {
+                for (const name in itemsMap) {
+                    const item = itemsMap[name];
+                    const quantity = item.quantity || 1;
+                    const price = item.price || 0;
+                    const itemSubtotal = quantity * price;
+
+                    itemsArray.push({ name, quantity, price, itemSubtotal });
+
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span>${name} (${quantity} unit${quantity !== 1 ? 's' : ''})</span><span>Ksh ${itemSubtotal.toLocaleString()}</span>`;
+                    itemListElement.appendChild(li);
+                }
+            } else {
+                itemListElement.innerHTML = '<li><span>No items in order.</span><span>Ksh 0</span></li>';
+                payButton.disabled = true;
+            }
+            
+            return { total, itemsArray };
+        }
+        
+        function handlePayment(event) {
+            event.preventDefault();
+            const { total, itemsArray } = loadOrderTotal();
+            const phoneNumber = document.getElementById('phone-number').value.trim();
+            const payButton = document.getElementById('payment-button');
+            
+            if (total <= 0 || itemsArray.length === 0) {
+                alert("Payment amount must be greater than zero and cart cannot be empty.");
+                return;
+            }
+
+            if (!phoneNumber) {
+                alert("Please enter your M-Pesa phone number.");
+                return;
+            }
+
+            payButton.disabled = true;
+            payButton.textContent = "Initializing STK Push...";
+            
+            alert(`Simulation: Initiating STK Push for Ksh ${total.toLocaleString()} to ${phoneNumber}.`);
+            
+            setTimeout(() => {
+                
+                sessionStorage.setItem('lastPaymentAmount', total.toLocaleString());
+                sessionStorage.setItem('lastPaymentPhone', phoneNumber);
+                sessionStorage.setItem('lastPaymentItems', JSON.stringify(itemsArray)); 
+                
+                localStorage.removeItem('simporConfirmedOrder');
+                
+                window.location.href = 'receipt.html'; 
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', loadOrderTotal);
+    </script>
+</body>
+</html>

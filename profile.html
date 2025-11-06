@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+    <link rel="stylesheet" href="style.css"> 
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        .profile-wrapper {
+            max-width: 450px;
+            margin: 50px auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .profile-wrapper h1 {
+            color: #f68b1e;
+            margin-bottom: 20px;
+        }
+        .avatar-icon {
+            font-size: 5em;
+            color: #f68b1e;
+            border: 3px solid #f68b1e;
+            border-radius: 50%;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        .profile-form-group {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+        .profile-form-group label {
+            display: block;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        .profile-form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+        }
+        .profile-form-group input[readonly] {
+            background-color: #eee;
+            cursor: not-allowed;
+            color: #888;
+        }
+        .save-btn {
+            background-color: #00A651;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            text-decoration: none;
+            display: block;
+            font-size: 1.1em;
+        }
+        .save-btn:hover {
+            background-color: #008f44;
+        }
+        .back-btn {
+            background-color: #f68b1e;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            text-decoration: none;
+            display: block;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            text-decoration: none;
+            display: block;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        .message {
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="profile-wrapper">
+        <img src="simpor log.png" alt="Simpor Logo" class="logo" style="max-width: 100px; margin-bottom: 20px;">
+        
+        <div class="avatar-container">
+            <i class='bx bxs-user-circle avatar-icon'></i>
+        </div>
+
+        <h1>Edit Profile</h1>
+        <div id="statusMessage" class="message"></div>
+        
+        <form id="profileEditForm">
+            <div class="profile-form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" readonly>
+            </div>
+            
+            <div class="profile-form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="profile-form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <button type="submit" class="save-btn">Save Profile Changes</button>
+        </form>
+
+        <a href="index.html" class="back-btn">Go Back to Store</a>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+        <a href="login.html" class="back-btn" id="loginRedirect" style="display:none; background-color: #3498db;">Login Now</a>
+    </div>
+
+    <script>
+        const profileEditForm = document.getElementById('profileEditForm');
+        const statusMessage = document.getElementById('statusMessage');
+
+        function loadProfileData() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const loginRedirect = document.getElementById('loginRedirect');
+
+            if (!currentUser) {
+                profileEditForm.style.display = 'none';
+                loginRedirect.style.display = 'block';
+                statusMessage.textContent = "You must be logged in to edit your profile.";
+                statusMessage.style.backgroundColor = '#f8d7da';
+                statusMessage.style.color = '#721c24';
+                statusMessage.style.display = 'block';
+                return null;
+            }
+
+            document.getElementById('username').value = currentUser.username || '';
+            document.getElementById('name').value = currentUser.name || '';
+            document.getElementById('email').value = currentUser.email || '';
+            
+            return currentUser;
+        }
+
+        function handleProfileUpdate(event) {
+            event.preventDefault();
+
+            let currentUser = loadProfileData();
+            if (!currentUser) return;
+
+            const currentUsername = currentUser.username;
+            
+            const newName = document.getElementById('name').value.trim();
+            const newEmail = document.getElementById('email').value.trim();
+            
+
+            let allUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+            
+            const updatedUser = {
+                ...currentUser, 
+                name: newName,
+                email: newEmail
+            };
+
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+
+            allUsers = allUsers.map(user => {
+                if (user.username === currentUsername) {
+                    return {
+                        ...user, 
+                        name: newName,
+                        email: newEmail
+                    };
+                }
+                return user;
+            });
+
+            localStorage.setItem('registeredUsers', JSON.stringify(allUsers));
+            
+            loadProfileData(); 
+
+            statusMessage.textContent = 'Profile updated successfully!';
+            statusMessage.style.backgroundColor = '#d4edda';
+            statusMessage.style.color = '#155724';
+            statusMessage.style.display = 'block';
+
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfileData();
+            profileEditForm.addEventListener('submit', handleProfileUpdate);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head> 
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <title>Simpor Investment - Register</title>
+        <link rel="stylesheet" href="style.css"> 
+        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+        <style>
+            .input-box {
+                position: relative;
+            }
+            .input-box i {
+                position: absolute;
+                right: 20px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 1.2em;
+                color: #f68b1e;
+            }
+            .password-toggle {
+                cursor: pointer;
+                z-index: 10;
+            }
+            .wrapper .logo {
+                max-width: 120px;
+                margin-bottom: 20px;
+                border-radius: 5px;
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        </style>
+    </head>
+    <body>
+
+        <div class="wrapper">
+            <img src="simpor log.png" alt="Simpor Logo" class="logo">
+            <form id="registrationForm" action="#" onsubmit="handleRegistration(event)">
+                <h1>Register</h1>
+                
+                <div class="input-box" >
+                    <input type="text" id="regName" placeholder="Full Name" required>
+                    <i class='bx bxs-user'></i>
+                </div>
+
+                <div class="input-box" >
+                    <input type="email" id="regEmail" placeholder="Email" required>
+                    <i class='bx bxs-envelope'></i>
+                </div>
+                
+                <div class="input-box" >
+                    <input type="text" id="regUsername" placeholder="Username (for login)" required>
+                    <i class='bx bxs-user'></i>
+                </div>
+
+                <div class="input-box" >
+                    <input type="password" id="regPassword" placeholder="Password" required>
+                    <i class='bx bx-show password-toggle' data-target="regPassword"></i>
+                </div>
+                
+                <div class="input-box" >
+                    <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+                    <i class='bx bx-show password-toggle' data-target="confirmPassword"></i>
+                </div>
+
+                <div class="remember-forgot">
+                    <label><input type="checkbox" required> I agree to the terms</label>
+                </div>
+
+                <button type="submit" class="btn">Register</button>
+                <p id="regMessage" style="color: red; margin-top: 10px;"></p>
+            </form>
+            
+            <div class="register-link" >
+                <p>Already have an account?<a href="login.html">Login</a></p>
+            </div>
+        </div>
+        
+        <script>
+            document.querySelectorAll('.password-toggle').forEach(toggleButton => {
+                toggleButton.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const passwordInput = document.getElementById(targetId);
+                    
+                    const isPassword = passwordInput.getAttribute('type') === 'password';
+                    
+                    passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+                    
+                    if (isPassword) {
+                        this.classList.remove('bx-show');
+                        this.classList.add('bx-hide');
+                    } else {
+                        this.classList.remove('bx-hide');
+                        this.classList.add('bx-show');
+                    }
+                });
+            });
+
+            function handleRegistration(event) {
+                event.preventDefault(); 
+                
+                const name = document.getElementById('regName').value;
+                const email = document.getElementById('regEmail').value;
+                // Removed the address field
+                const username = document.getElementById('regUsername').value;
+                const password = document.getElementById('regPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const message = document.getElementById('regMessage');
+                
+                message.textContent = '';
+
+                if (password !== confirmPassword) {
+                    message.textContent = "Error: Passwords do not match!";
+                    message.style.color = "red";
+                    return;
+                }
+
+                let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+
+                if (users.some(user => user.username === username)) {
+                    message.textContent = "Error: Username already taken! Please go to Login.";
+                    message.style.color = "red";
+                    return;
+                }
+
+                const newUser = { 
+                    name: name,
+                    email: email,
+                    // address is omitted from the saved object
+                    username: username, 
+                    password: password,
+                    registrationDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                };
+
+                users.push(newUser);
+
+                localStorage.setItem('registeredUsers', JSON.stringify(users));
+
+                localStorage.setItem('currentUser', JSON.stringify(newUser));
+
+                message.textContent = "Registration successful! Proceeding to the store...";
+                message.style.color = "green";
+
+                setTimeout(() => {
+                    window.location.href = 'index.html'; 
+                }, 1500); 
+            }
+        </script>
+    </body>
+</html>

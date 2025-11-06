@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head> 
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <title>Simpor Investment - Login</title>
+        <link rel="stylesheet" href="style.css"> 
+        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+        <style>
+            .input-box {
+                position: relative;
+            }
+            .input-box i {
+                position: absolute;
+                right: 20px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 1.2em;
+                color: #f68b1e;
+            }
+            .password-toggle {
+                cursor: pointer;
+                z-index: 10;
+            }
+            .logo-container {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            .logo-container img {
+                max-width: 150px;
+                height: auto;
+            }
+        </style>
+    </head>
+    <body>
+
+        <div class="wrapper">
+            <form id="loginForm" action="#" onsubmit="handleLogin(event)">
+                
+                <div class="logo-container">
+                    <img src="simpor log.png" alt="Simpor Investment Logo">
+                </div>
+                
+                <h1>Login</h1>
+                
+                <div class="input-box" >
+                    <input type="text" id="loginUsername" placeholder="Username" required>
+                    <i class='bx bxs-user'></i>
+                </div>
+                
+                <div class="input-box" >
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                    <i class='bx bx-show password-toggle' id="togglePassword"></i>
+                </div>
+                
+                <div class="remember-forgot">
+                    <label><input type="checkbox" id="rememberMeCheckbox">Remember Me</label>
+                    <a href="#" onclick="recoverPassword(event)">Forgot password</a>
+                </div>
+                
+                <button type="submit" class="btn">Login</button>
+                
+                <p id="message" style="color: red; margin-top: 10px;"></p>
+            </form>
+            
+            <div class="register-link" >
+                <p>Don't have an account?<a href="register.html">Register</a></p>
+            </div>
+        </div>
+        
+        <script>
+            const passwordInput = document.getElementById('loginPassword');
+            const toggleButton = document.getElementById('togglePassword');
+            const usernameField = document.getElementById('loginUsername');
+            const rememberMeCheckbox = document.getElementById('rememberMeCheckbox');
+
+            function setupPlaceholderUser() {
+                const users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+                const testUserExists = users.some(u => u.username === 'testuser');
+
+                if (!testUserExists) {
+                    const testUser = {
+                        username: 'testuser',
+                        password: 'password123',
+                        name: 'Test Account',
+                        email: 'test@simpor.com',
+                        registrationDate: new Date().toLocaleDateString('en-US')
+                    };
+                    users.push(testUser);
+                    localStorage.setItem('registeredUsers', JSON.stringify(users));
+                }
+            }
+
+            function loadRememberedUser() {
+                const rememberedUsername = localStorage.getItem('rememberedUsername');
+                if (rememberedUsername) {
+                    usernameField.value = rememberedUsername;
+                    rememberMeCheckbox.checked = true;
+                }
+            }
+
+            if (toggleButton) {
+                toggleButton.addEventListener('click', function() {
+                    const isPassword = passwordInput.getAttribute('type') === 'password';
+                    
+                    passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+                    
+                    if (isPassword) {
+                        toggleButton.classList.remove('bx-show');
+                        toggleButton.classList.add('bx-hide');
+                    } else {
+                        toggleButton.classList.remove('bx-hide');
+                        toggleButton.classList.add('bx-show');
+                    }
+                });
+            }
+            
+            function handleLogin(event) {
+                event.preventDefault(); 
+                
+                const username = usernameField.value;
+                const password = passwordInput.value;
+                const message = document.getElementById('message');
+                message.textContent = ''; 
+
+                const users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+
+                const userFound = users.find(user => 
+                    user.username === username && user.password === password
+                );
+
+                if (userFound) {
+                    localStorage.setItem('currentUser', JSON.stringify(userFound));
+
+                    if (rememberMeCheckbox.checked) {
+                        localStorage.setItem('rememberedUsername', username);
+                    } else {
+                        localStorage.removeItem('rememberedUsername');
+                    }
+
+                    message.textContent = "Login successful! Redirecting to store...";
+                    message.style.color = "green";
+                    
+                    setTimeout(() => {
+                        window.location.href = 'index.html'; 
+                    }, 1000); 
+
+                } else {
+                    message.textContent = "Error: Invalid username or password.";
+                    message.style.color = "red";
+                }
+            }
+            
+            function recoverPassword(event) {
+                event.preventDefault(); 
+                
+                const messageBox = document.getElementById('message');
+                messageBox.textContent = ''; 
+                
+                const recoveryUsername = prompt("Please enter the username you registered with:");
+                
+                if (recoveryUsername) {
+                    const users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+                    
+                    const user = users.find(u => u.username === recoveryUsername);
+                    
+                    if (user) {
+                        alert(`Password Recovery Successful!\nYour password is: ${user.password}`);
+                        messageBox.textContent = "Password displayed above. Please log in.";
+                        messageBox.style.color = "blue";
+                        
+                        usernameField.value = recoveryUsername;
+                        
+                    } else {
+                        alert("Error: Username not found in the system.");
+                        messageBox.textContent = "Recovery failed: Username not registered.";
+                        messageBox.style.color = "red";
+                    }
+                }
+            }
+            
+            document.addEventListener('DOMContentLoaded', () => {
+                setupPlaceholderUser();
+                loadRememberedUser();
+            });
+        </script>
+    </body>
+</html>
